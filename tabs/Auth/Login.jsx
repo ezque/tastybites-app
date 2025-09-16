@@ -12,20 +12,83 @@ import {
 } from "react-native";
 import { MaterialIcons} from "@expo/vector-icons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import {useState} from "react";
+import {useRef, useState} from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
+import {router} from "expo-router";
 
+import BASE_URL from "../../apiConfig";
 
-export default function Login() {
+const api_URL = `${BASE_URL}/login`;
+export default function Login({changeTab}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const toggleShowPassword = () => {
         setShowPassword(!showPassword);
     }
+    const emailErrorTimeoutRef = useRef(null);
+    const passwordErrorTimeoutRef = useRef(null);
+    const handleLogin = async () => {
+        if (emailErrorTimeoutRef.current) {
+            clearTimeout(emailErrorTimeoutRef.current);
+        }
+        if (passwordErrorTimeoutRef.current) {
+            clearTimeout(passwordErrorTimeoutRef.current);
+        }
+        setEmailError('');
+        setPasswordError('');
+        if (!email || !password) {
+            if (!email) {
+                setEmailError('Please enter your email.');
+                emailErrorTimeoutRef.current = setTimeout(() => setEmailError(''), 5000);
+            }
+            if (!password) {
+                setPasswordError('Please enter your password.');
+                passwordErrorTimeoutRef.current = setTimeout(() => setPasswordError(''), 5000);
+            }
+            return;
+        }
+        try {
+            console.log("Sending to:", api_URL);
+            console.log("Payload:", { email, password });
+            const response = await axios.post(api_URL, {
+                email,
+                password
+            });
+
+            const { access_token, role, id } = response.data;
+
+
+            if (id) {
+                await AsyncStorage.setItem('access_token', access_token);
+                await AsyncStorage.setItem('user_role', role);
+                await AsyncStorage.setItem('user_id', id.toString());
+            } else {
+                setEmailError("Login failed: User ID missing.");
+                emailErrorTimeoutRef.current = setTimeout(() => setEmailError(''), 5000);
+                return;
+            }
+
+            if (role === "chef") {
+                router.push('/Chef');
+            } else if (role === "user") {
+                router.push('/User');
+            }
+        } catch (error) {
+            if (error.response) {
+                console.log("Backend responded with error:", error.response.data);
+            } else if (error.request) {
+                console.log("No response received. Request details:", error.request);
+            } else {
+                console.log("Error setting up request:", error.message);
+            }s
+        }
+    }
 
     return (
-        <ScrollView>
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
@@ -40,7 +103,7 @@ export default function Login() {
                                 <TextInput
                                     style={{ flex: 1, marginLeft: 5 }}
                                     placeholder="Username"
-                                    placeholderTextColor={"#A17777"}
+                                    placeholderTextColor={"#AFADAD"}
                                     keyboardType={"email-address"}
                                     value={email}
                                     onChangeText={setEmail}
@@ -52,7 +115,7 @@ export default function Login() {
                                 <TextInput
                                     style={{ flex: 1, marginLeft: 5 }}
                                     placeholder="Password"
-                                    placeholderTextColor={"#A17777"}
+                                    placeholderTextColor={"#AFADAD"}
                                     secureTextEntry={!showPassword}
                                     value={password}
                                     onChangeText={setPassword}
@@ -67,11 +130,14 @@ export default function Login() {
 
                             </View>
                         </View>
-                        <TouchableOpacity style={styles.button}>
-                            <Text style={styles.buttonText}>Login</Text>
+                        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                            <Text style={styles.buttonText}>LOGIN</Text>
                         </TouchableOpacity>
                         <View style={styles.beforefooter}>
-                            <Text style={styles.beforefooterText}>Don't Have an Account? Click Here to Register</Text>
+                            <Text style={styles.beforefooterText}>Don't Have an Account? </Text>
+                            <TouchableOpacity onPress={() => changeTab(false)}>
+                                <Text style={styles.regBttn}>Register</Text>
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.footer}>
                             <Image source={require("../../assets/logo/tastybites second logo.png")} style={styles.footerLogo}/>
@@ -80,14 +146,12 @@ export default function Login() {
                     </View>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
-        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#E0E7FF",
         paddingHorizontal: 30,
     },
     inner: {
@@ -105,7 +169,7 @@ const styles = StyleSheet.create({
         fontSize: 50,
         bottom: 30,
         fontWeight: "200",
-      paddingHorizontal: 10,
+        paddingHorizontal: 10,
     },
     inputs: {
         width: "100%",
@@ -113,17 +177,17 @@ const styles = StyleSheet.create({
     },
     inputIcon: {
         fontSize: 20,
-        color: "#A17777",
+        color: "#AFADAD",
     },
     eyeIconButton: {
         fontSize: 20,
-        color: "#A17777",
+        color: "#AFADAD",
         position: "absolute",
         right: 10,
     },
     eyeIcon: {
         fontSize: 20,
-        color: "#A17777",
+        color: "#AFADAD",
     },
     inputContainer: {
         width: "100%",
@@ -134,10 +198,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 10,
         backgroundColor: "white",
-        borderColor: "#C55858",
+        elevation: 4,
+        borderColor: 'white'
     },
     button: {
-        width: "60%",
+        width: "100%",
         paddingVertical: 10,
         flexDirection: "row",
         alignItems: "center",
@@ -150,13 +215,14 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 18,
         fontWeight: "bold",
+        fontFamily: "Roboto-Bold"
     },
     beforefooter: {
         width: "100%",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        marginTop: 20,
+        marginTop: 5,
     },
     beforefooterText: {
         color: "black",
@@ -167,7 +233,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
-        top: 45,
+        top: 55,
         gap: 5
     },
     footerLogo: {
@@ -176,5 +242,8 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 15
+    },
+    regBttn: {
+        color: 'blue',
     }
 });

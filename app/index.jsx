@@ -1,22 +1,37 @@
 import {
-  StyleSheet,
-  View
+  StyleSheet, View, Image
 } from "react-native";
+import React, { useState } from "react";
 import Login from "../tabs/Auth/Login";
+import Register from "../tabs/Auth/Register";
 
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Login />
-    </View>
-  );
+    const [showLogin, setShowLogin] = useState(true);
+
+    const changeTab =(showLoginTab) => {
+        setShowLogin(showLoginTab);
+    }
+
+    return (
+        <View style={styles.container}>
+            <Image source={require('../assets/logo/backGround.jpg')} style={styles.imageBackgroound}/>
+            {showLogin ? <Login changeTab={changeTab} /> : <Register changeTab={changeTab}/>}
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#E0E7FF",
-  },
+    container: {
+        flex: 1,
+        backgroundColor: "white",
+    },
+    imageBackgroound: {
+        width: 250,
+        height: 250,
+        position: "absolute",
+        right: 0,
+        top: 0,
+    }
 });
 
 

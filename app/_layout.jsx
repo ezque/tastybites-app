@@ -7,6 +7,8 @@ import React, { useEffect } from 'react';
 export default function RootLayout() {
     const [fontsLoaded, fontError] = useFonts({
         'RougeScript-Regular': require('../assets/fonts/RougeScript-Regular.ttf'),
+        'Roboto-Regular': require('../assets/fonts/Roboto-Regular.ttf'),
+        'Roboto-Bold': require('../assets/fonts/Roboto-Bold.ttf'),
     });
 
     useEffect(() => {
