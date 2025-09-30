@@ -22,7 +22,7 @@ import BASE_URL from "../../apiConfig";
 const api_URL = `${BASE_URL}/login`;
 export default function Login({changeTab}) {
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [password, setPassword] = useState("123456");
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -71,12 +71,12 @@ export default function Login({changeTab}) {
                 emailErrorTimeoutRef.current = setTimeout(() => setEmailError(''), 5000);
                 return;
             }
-
-            if (role === "chef") {
-                router.push('/Chef');
-            } else if (role === "user") {
-                router.push('/User');
-            }
+            router.push('/User');
+            // if (role === "chef") {
+            //     router.push('/Chef');
+            // } else if (role === "user") {
+            //     router.push('/User');
+            // }
         } catch (error) {
             if (error.response) {
                 console.log("Backend responded with error:", error.response.data);
