@@ -8,11 +8,12 @@ import {
     View,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    Keyboard, ScrollView
+    Keyboard,
+    ActivityIndicator, // Import for a loading state
+    ScrollView
 } from "react-native";
-import { MaterialIcons} from "@expo/vector-icons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import {useRef, useState} from "react";
+import {useRef, useState, useEffect} from "react"; // Import useEffect
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import {router} from "expo-router";
@@ -26,12 +27,55 @@ export default function Login({changeTab}) {
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [isLoading, setIsLoading] = useState(true); // New loading state
+
     const toggleShowPassword = () => {
         setShowPassword(!showPassword);
     }
     const emailErrorTimeoutRef = useRef(null);
     const passwordErrorTimeoutRef = useRef(null);
+
+    // --- New Code for Auto-Login Check ---
+
+    const checkLocalToken = async () => {
+        try {
+            const token = await AsyncStorage.getItem('access_token');
+            const role = await AsyncStorage.getItem('user_role');
+            const id = await AsyncStorage.getItem('user_id');
+
+            if (token && role && id) {
+                console.log("Found token and user info. Auto-logging in...");
+                // Note: You might want an API endpoint to validate the token's expiry/validity
+                // before routing, but for simple auto-login, this is a start.
+
+                // The logic here is simplified. If a token exists, assume the user is logged in
+                // and navigate them directly.
+                router.push('/User');
+                // You could re-implement the role check here if needed:
+                // if (role === "chef") {
+                //     router.replace('/Chef'); // Use replace to prevent back navigation to Login
+                // } else if (role === "user") {
+                //     router.replace('/User');
+                // }
+
+            }
+        } catch (e) {
+            console.error("Failed to read token from AsyncStorage", e);
+            // Optionally clear storage if reading fails catastrophically
+            // await AsyncStorage.clear();
+        } finally {
+            setIsLoading(false); // Stop loading regardless of outcome
+        }
+    };
+
+    useEffect(() => {
+        checkLocalToken();
+    }, []); // Run only once on component mount
+
+    // --- End New Code ---
+
     const handleLogin = async () => {
+        // ... (rest of handleLogin function remains the same)
         if (emailErrorTimeoutRef.current) {
             clearTimeout(emailErrorTimeoutRef.current);
         }
@@ -71,11 +115,12 @@ export default function Login({changeTab}) {
                 emailErrorTimeoutRef.current = setTimeout(() => setEmailError(''), 5000);
                 return;
             }
-            router.push('/User');
+            // Use router.replace to prevent going back to the login screen
+            router.replace('/User');
             // if (role === "chef") {
-            //     router.push('/Chef');
+            //     router.replace('/Chef');
             // } else if (role === "user") {
-            //     router.push('/User');
+            //     router.replace('/User');
             // }
         } catch (error) {
             if (error.response) {
@@ -84,9 +129,28 @@ export default function Login({changeTab}) {
                 console.log("No response received. Request details:", error.request);
             } else {
                 console.log("Error setting up request:", error.message);
-            }s
+            }
+            // Add UI feedback for general login failure
+            if (error.response && error.response.data && error.response.data.message) {
+                setEmailError(error.response.data.message);
+                emailErrorTimeoutRef.current = setTimeout(() => setEmailError(''), 5000);
+            } else {
+                setEmailError("Login failed. Please try again.");
+                emailErrorTimeoutRef.current = setTimeout(() => setEmailError(''), 5000);
+            }
         }
     }
+
+    // --- Display a loading screen while checking the token ---
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FF6347" />
+                <Text style={styles.loadingText}>Checking for stored session...</Text>
+            </View>
+        );
+    }
+    // --- End Loading Screen ---
 
     return (
         <KeyboardAvoidingView
@@ -94,56 +158,63 @@ export default function Login({changeTab}) {
             style={styles.container}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <View style={styles.inner}>
-                        <Image source={require("../../assets/logo/tastybites icon.png")} style={styles.logo} />
-                        <Text style={styles.welcomeText}>Welcome Back!</Text>
-                        <View style={styles.inputs}>
-                            <View style={styles.inputContainer}>
-                                <MaterialCommunityIcons name="email-outline" style={styles.inputIcon} />
-                                <TextInput
-                                    style={{ flex: 1, marginLeft: 5 }}
-                                    placeholder="Username"
-                                    placeholderTextColor={"#AFADAD"}
-                                    keyboardType={"email-address"}
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    autoCapitalize={"none"}
-                                />
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <MaterialCommunityIcons name="lock-outline" style={styles.inputIcon} />
-                                <TextInput
-                                    style={{ flex: 1, marginLeft: 5 }}
-                                    placeholder="Password"
-                                    placeholderTextColor={"#AFADAD"}
-                                    secureTextEntry={!showPassword}
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    autoCapitalize={"none"}
-                                />
-                                <TouchableOpacity style={styles.eyeIconButton} onPress={toggleShowPassword}>
-                                    <MaterialCommunityIcons
-                                        name={showPassword ? "eye-off-outline" : "eye-outline"}
-                                        style={styles.eyeIcon}
-                                    />
-                                </TouchableOpacity>
+                <View style={styles.inner}>
+                    <Image source={require("../../assets/logo/tastybites icon.png")} style={styles.logo} />
+                    <Text style={styles.welcomeText}>Welcome Back!</Text>
 
-                            </View>
+                    {/* Error Messages */}
+                    {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+                    {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                    {/* End Error Messages */}
+
+                    <View style={styles.inputs}>
+                        {/* ... (Your existing TextInput/InputContainer code) ... */}
+                        <View style={styles.inputContainer}>
+                            <MaterialCommunityIcons name="email-outline" style={styles.inputIcon} />
+                            <TextInput
+                                style={{ flex: 1, marginLeft: 5 }}
+                                placeholder="Username"
+                                placeholderTextColor={"#AFADAD"}
+                                keyboardType={"email-address"}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize={"none"}
+                            />
                         </View>
-                        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                            <Text style={styles.buttonText}>LOGIN</Text>
-                        </TouchableOpacity>
-                        <View style={styles.beforefooter}>
-                            <Text style={styles.beforefooterText}>Don't Have an Account? </Text>
-                            <TouchableOpacity onPress={() => changeTab(false)}>
-                                <Text style={styles.regBttn}>Register</Text>
+                        <View style={styles.inputContainer}>
+                            <MaterialCommunityIcons name="lock-outline" style={styles.inputIcon} />
+                            <TextInput
+                                style={{ flex: 1, marginLeft: 5 }}
+                                placeholder="Password"
+                                placeholderTextColor={"#AFADAD"}
+                                secureTextEntry={!showPassword}
+                                value={password}
+                                onChangeText={setPassword}
+                                autoCapitalize={"none"}
+                            />
+                            <TouchableOpacity style={styles.eyeIconButton} onPress={toggleShowPassword}>
+                                <MaterialCommunityIcons
+                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                    style={styles.eyeIcon}
+                                />
                             </TouchableOpacity>
-                        </View>
-                        <View style={styles.footer}>
-                            <Image source={require("../../assets/logo/tastybites second logo.png")} style={styles.footerLogo}/>
-                            <Text style={styles.footerText}>©Tastybites. All rights reserved.</Text>
+
                         </View>
                     </View>
+                    <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                        <Text style={styles.buttonText}>LOGIN</Text>
+                    </TouchableOpacity>
+                    <View style={styles.beforefooter}>
+                        <Text style={styles.beforefooterText}>Don't Have an Account? </Text>
+                        <TouchableOpacity onPress={() => changeTab(false)}>
+                            <Text style={styles.regBttn}>Register</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.footer}>
+                        <Image source={require("../../assets/logo/tastybites second logo.png")} style={styles.footerLogo}/>
+                        <Text style={styles.footerText}>©Tastybites. All rights reserved.</Text>
+                    </View>
+                </View>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     );
