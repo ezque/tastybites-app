@@ -3,8 +3,7 @@ import {
     TouchableOpacity,
     View,
     Alert
-}
-    from "react-native";
+} from "react-native";
 import axios from "axios";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
