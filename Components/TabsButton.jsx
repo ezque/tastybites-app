@@ -50,7 +50,6 @@ const styles = StyleSheet.create({
     TabsContainer: {
         width: "100%",
         height: 55,
-        borderWidth: 1,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",

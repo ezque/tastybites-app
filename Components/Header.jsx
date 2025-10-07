@@ -5,12 +5,22 @@ import {
     Image,
     TextInput
 } from "react-native";
+// Import MaterialIcons if you want to add a search icon
+import { MaterialIcons} from "@expo/vector-icons";
+
 export default function Header() {
     return (
         <View style={styles.headerContainer}>
             <Image source={require("../assets/logo/tastybites second logo.png")} style={styles.headerLogo}/>
             <View style={styles.searchContainer}>
-                <TextInput placeholder={"Search"} style={styles.searchBar}/>
+                {/* 🔑 KEY CHANGE: Use placeholderTextColor
+                    I'm suggesting a lighter color like #A0A0A0 for the placeholder
+                */}
+                <TextInput
+                    placeholder={"Search"}
+                    style={styles.searchBar}
+                    placeholderTextColor={"#A0A0A0"} // 👈 Add this line
+                />
             </View>
         </View>
     )
@@ -42,8 +52,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "black",
         borderRadius: 20,
-        padding: 15,
-        display: "flex",
-        alignItems: "center"
+        paddingHorizontal: 15,
     }
 });
