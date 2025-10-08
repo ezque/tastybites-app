@@ -38,10 +38,10 @@ export default function Home() {
         }
     };
 
+
     useEffect(() => {
         fetchRecipes();
     }, []);
-
     if (loading) {
         return <ActivityIndicator size="large" style={{ flex: 1 }} />;
     }

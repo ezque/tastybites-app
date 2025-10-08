@@ -81,7 +81,6 @@ export default function RecipeCard({ recipe }) {
 
     return (
         <View style={styles.card}>
-            {/* Image Section */}
             <View style={styles.imageContainer}>
                 {recipe.image_url && (
                     <Image
@@ -92,44 +91,51 @@ export default function RecipeCard({ recipe }) {
                 )}
             </View>
 
-            {/* Text Section */}
             <View style={styles.textContainer}>
                 <Text style={styles.recipeName}>{recipe.recipeName}</Text>
-                <Text style={styles.recipeCuisine}>{recipe.cuisineType}</Text>
+                <Text style={styles.recipeCuisine}>Cuisine: {recipe.cuisineType}</Text>
                 <Text style={styles.recipeChef}>
-                    By {recipe.user?.userInfo?.name || "Unknown"}
+                    Chef: @{recipe.user?.user_info?.userName || "Unknown"}
                 </Text>
             </View>
 
-            {/* Buttons Section */}
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.button, styles.viewButton]}>
-                    <Text style={styles.buttonText}>View</Text>
-                </TouchableOpacity>
+                <View style={styles.viewButtonMain}>
+                    <TouchableOpacity style={styles.viewButton}>
+                        <Text style={styles.viewButtonText}>View Recipe</Text>
+                    </TouchableOpacity>
+                </View>
 
-                <TouchableOpacity
-                    style={[styles.button, styles.likeButton]}
-                    onPress={toggleLike}
-                >
-                    <MaterialIcons
-                        name={liked ? "favorite" : "favorite-border"}
-                        size={20}
-                        color="#fff"
-                    />
-                    <Text style={styles.buttonText}>{likeCount}</Text>
-                </TouchableOpacity>
+                <View style={styles.reactionMain}>
+                    <View style={styles.reactionContainer}>
+                        <TouchableOpacity
+                            style={styles.likeButton}
+                            onPress={toggleLike}
+                        >
+                            <MaterialIcons
+                                name={liked ? "favorite" : "favorite-border"}
+                                size={20}
+                                color={liked ? "red" : "black"}
+                            />
+                        </TouchableOpacity>
+                        <Text style={styles.buttonText}>{likeCount}</Text>
+                    </View>
+                    <View style={styles.reactionContainer}>
+                        <TouchableOpacity
+                            style={styles.dislikeButton}
+                            onPress={toggleDislike}
+                        >
+                            <MaterialIcons
+                                name={disliked ? "thumb-down" : "thumb-down-off-alt"}
+                                size={20}
+                                color={disliked ? "red" : "black"}
+                            />
 
-                <TouchableOpacity
-                    style={[styles.button, styles.dislikeButton]}
-                    onPress={toggleDislike}
-                >
-                    <MaterialIcons
-                        name={disliked ? "thumb-down" : "thumb-down-off-alt"}
-                        size={20}
-                        color="#fff"
-                    />
-                    <Text style={styles.buttonText}>{dislikeCount}</Text>
-                </TouchableOpacity>
+                        </TouchableOpacity>
+                        <Text style={styles.buttonText}>{dislikeCount}</Text>
+                    </View>
+                </View>
+
             </View>
         </View>
     );
@@ -147,7 +153,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 3 },
         elevation: 4,
         width: 160,
-        height: 280,
+        height: 250,
         marginBottom: 12,
     },
     imageContainer: {
@@ -184,30 +190,53 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         width: "100%",
+        height: 40,
         flexDirection: "row",
-        justifyContent: "space-around",
-        marginTop: 10,
+        justifyContent: "space-between",
+        display: "flex",
     },
-    button: {
-        flexDirection: "row",
+    viewButtonMain: {
+        width: "60%",
+        height: "100%",
         alignItems: "center",
-        paddingVertical: 6,
-        paddingHorizontal: 8,
-        borderRadius: 6,
+        justifyContent: "center"
+    },
+    reactionMain: {
+        height: "100%",
+        width: "40%",
+        display: "flex",
+        flexDirection: "row",
+    },
+    reactionContainer: {
+        width: 30,
+        height: "100%",
+        flexDirection: "column",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
     },
     viewButton: {
         backgroundColor: "#4A90E2",
+        width: "100%",
+        height: "70%",
+        borderRadius: 20,
+        alignItems: "center",
+        justifyContent: "center",
     },
     likeButton: {
-        backgroundColor: "#27ae60",
+        width: 20,
+        height: 20,
     },
     dislikeButton: {
-        backgroundColor: "#e74c3c",
+        width: 20,
+        height: 20,
+    },
+    viewButtonText: {
+        color: "#fff"
     },
     buttonText: {
-        color: "#fff",
+        color: "#000",
         fontSize: 12,
         fontWeight: "600",
-        marginLeft: 4,
     },
 });
