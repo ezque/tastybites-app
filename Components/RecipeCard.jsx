@@ -157,14 +157,15 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     imageContainer: {
-        width: "100%",
+        width: "90%",
         height: 120,
         marginBottom: 8,
+        borderRadius: "50%",
     },
     image: {
         width: "100%",
         height: "100%",
-        borderRadius: 8,
+        borderRadius: 80,
     },
     textContainer: {
         flex: 1,
