@@ -1,7 +1,21 @@
-import { Text } from "react-native";
-
+import {
+    View,
+    StyleSheet,
+} from "react-native";
+import ChefCard from "../Components/ChefCard";
 export default function Chef(){
+
     return (
-        <Text>Chef</Text>
+        <View style={styles.container}>
+            <ChefCard />
+        </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: "center",
+        flexDirection: "column"
+    }
+})
