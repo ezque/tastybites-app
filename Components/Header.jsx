@@ -1,46 +1,50 @@
-import {
-    Text,
-    View,
-    StyleSheet,
-    Image,
-    TextInput
-} from "react-native";
-// Import MaterialIcons if you want to add a search icon
-import { MaterialIcons} from "@expo/vector-icons";
+import React from "react";
+import { Text, View, StyleSheet, Image, TextInput } from "react-native";
 
-export default function Header() {
+export default function Header({ activeTab, onSearchChange }) {
+    // Only show search for Home or Chef
+    const showSearch = activeTab === "home" || activeTab === "chef" || activeTab === "recipe";
+
     return (
         <View style={styles.headerContainer}>
-            <Image source={require("../assets/logo/tastybites second logo.png")} style={styles.headerLogo}/>
-            <View style={styles.searchContainer}>
-                {/* 🔑 KEY CHANGE: Use placeholderTextColor
-                    I'm suggesting a lighter color like #A0A0A0 for the placeholder
-                */}
-                <TextInput
-                    placeholder={"Search"}
-                    style={styles.searchBar}
-                    placeholderTextColor={"#A0A0A0"} // 👈 Add this line
-                />
-            </View>
+            <Image
+                source={require("../assets/logo/tastybites second logo.png")}
+                style={styles.headerLogo}
+            />
+
+            {showSearch && (
+                <View style={styles.searchContainer}>
+                    <TextInput
+                        placeholder={
+                            activeTab === "home" || activeTab === "recipe"
+                                ? "Search recipes..."
+                                : "Search chefs..."
+                        }
+                        style={styles.searchBar}
+                        placeholderTextColor="#A0A0A0"
+                        onChangeText={onSearchChange}
+                    />
+                </View>
+            )}
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
     headerContainer: {
-        width: '100%',
+        width: "100%",
         height: 100,
         backgroundColor: "white",
         paddingTop: 25,
-        display: "flex",
+        flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        flexDirection: "row",
-        padding: 10
+        paddingHorizontal: 10,
     },
     headerLogo: {
         width: 120,
         height: 40,
+        resizeMode: "contain",
     },
     searchContainer: {
         width: 150,
@@ -53,5 +57,6 @@ const styles = StyleSheet.create({
         borderColor: "black",
         borderRadius: 20,
         paddingHorizontal: 15,
-    }
+        fontSize: 14,
+    },
 });
